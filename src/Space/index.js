@@ -10,7 +10,7 @@ export default class Space {
       resolution: window.devicePixelRatio || 1
     })
     this.planets = [];
-    this.planetAmount = 500;
+    this.planetAmount = 400;
   }
 
   init() {
@@ -26,17 +26,17 @@ export default class Space {
       y: this.app.screen.height * 0.5
     }
 
-    this.sun = new Planet(sunCoordinates.x, sunCoordinates.y, 20, 0xfbf019);
+    this.sun = new Planet(sunCoordinates.x, sunCoordinates.y, 100, 0xfbf019);
     this.app.stage.addChild(this.sun);
   }
 
   drawPlanets() {
     for (let index = 0; index < this.planetAmount; index++) {
       const deg = Math.random() * Math.PI * 2;
-      const distance = Math.floor(Math.random() * 120) + 110;
+      const distance = Math.floor(Math.random() * this.app.screen.height) + 100;
       const planetCoordinates = {
-        x: this.app.screen.width * 0.5 + Math.cos(deg) * distance,
-        y: this.app.screen.height * 0.5 + Math.sin(deg) * distance
+        x: this.app.screen.width * 0.5 + Math.cos(deg),
+        y: this.app.screen.height * 0.5 + Math.sin(deg)
       }
       const planetSize = Math.floor(Math.random() * 2) + 1;
       const planet = new Planet(planetCoordinates.x, planetCoordinates.y, planetSize, 0xffffff);
@@ -68,7 +68,7 @@ export default class Space {
         if (index === 0) {
 
         }
-        count += 0.03 / this.planetAmount;
+        count += 0.0005 / this.planetAmount;
         const { graphics, initialAngle, distance } = planet
         const newPosX = Math.cos(initialAngle + count) * distance
         const newPosY = Math.sin(initialAngle + count) * distance

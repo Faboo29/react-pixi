@@ -8,9 +8,9 @@ export default class Space {
       height: window.innerHeight,
       backgroundColor: 0x000000,
       resolution: window.devicePixelRatio || 1
-    })
+    });
     this.planets = [];
-    this.planetAmount = 400;
+    this.planetAmount = 2000;
   }
 
   init() {
@@ -24,10 +24,23 @@ export default class Space {
     const sunCoordinates = {
       x: this.app.screen.width * 0.5,
       y: this.app.screen.height * 0.5
-    }
+    };
 
-    this.sun = new Planet(sunCoordinates.x, sunCoordinates.y, 100, 0xfbf019);
-    this.app.stage.addChild(this.sun);
+    this.sun = new Planet(
+      sunCoordinates.x,
+      sunCoordinates.y,
+      100,
+      0xf2cc59,
+      0.6
+    );
+    const sunLight = new Planet(
+      sunCoordinates.x,
+      sunCoordinates.y,
+      104,
+      0xffffff,
+      0.9
+    );
+    this.app.stage.addChild(sunLight, this.sun);
   }
 
   drawPlanets() {
@@ -37,14 +50,22 @@ export default class Space {
       const planetCoordinates = {
         x: this.app.screen.width * 0.5 + Math.cos(deg),
         y: this.app.screen.height * 0.5 + Math.sin(deg)
-      }
+      };
       const planetSize = Math.floor(Math.random() * 2) + 1;
-      const planet = new Planet(planetCoordinates.x, planetCoordinates.y, planetSize, 0xffffff);
+      const planetLight = parseFloat(Math.random().toFixed(2));
+      const planet = new Planet(
+        planetCoordinates.x,
+        planetCoordinates.y,
+        planetSize,
+        0xffffff,
+        planetLight
+      );
       this.app.stage.addChild(planet);
       this.planets.push({
         graphics: planet,
         initialAngle: deg,
-        distance: distance
+        distance: distance,
+        speed: Math.floor(Math.random() * 10) + 1
       });
     }
   }
@@ -55,26 +76,25 @@ export default class Space {
       const path = new PIXI.Graphics();
       path.lineStyle(1, 0xffffff, 1);
       path.moveTo(this.app.screen.width / 2, this.app.screen.height / 2);
-      path.lineTo(x, y)
+      path.lineTo(x, y);
 
-      this.app.stage.addChild(path)
+      this.app.stage.addChild(path);
     }
   }
 
   animate() {
     let count = 0;
-    this.app.ticker.add(delta => {
+    this.app.ticker.add((delta) => {
       this.planets.forEach((planet, index) => {
         if (index === 0) {
-
         }
-        count += 0.0005 / this.planetAmount;
-        const { graphics, initialAngle, distance } = planet
-        const newPosX = Math.cos(initialAngle + count) * distance
-        const newPosY = Math.sin(initialAngle + count) * distance
-        graphics.transform.position.x = newPosX
-        graphics.transform.position.y = newPosY
-      })
-    })
+        const { graphics, initialAngle, distance, speed } = planet;
+        count += speed / (this.planetAmount * 10000);
+        const newPosX = Math.cos(initialAngle + count) * distance;
+        const newPosY = Math.sin(initialAngle + count) * distance;
+        graphics.transform.position.x = newPosX;
+        graphics.transform.position.y = newPosY;
+      });
+    });
   }
 }

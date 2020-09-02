@@ -11,11 +11,13 @@ export default class Space {
     });
     this.planets = [];
     this.planetAmount = 2000;
+    this.app.stage.sortableChildren = true;
   }
 
   init() {
     document.getElementById('canvas').appendChild(this.app.view);
     this.drawPlanets();
+    this.drawBigPlanet();
     this.drawSun();
     this.animate();
   }
@@ -25,25 +27,49 @@ export default class Space {
       x: this.app.screen.width * 0.5,
       y: this.app.screen.height * 0.5
     };
-
-    this.sun = new Planet(
+    const sunSize = 200;
+    this.sun = new PIXI.Container();
+    this.sun.name = 'sun';
+    this.sun.zIndex = 10;
+    const sunCenter = new Planet(
       sunCoordinates.x,
       sunCoordinates.y,
-      100,
+      sunSize,
       0xf2cc59,
       0.6
     );
+
     const sunLight = new Planet(
       sunCoordinates.x,
       sunCoordinates.y,
-      104,
+      sunSize * 1.04,
       0xffffff,
       0.9
     );
-    this.app.stage.addChild(sunLight, this.sun);
+    this.sun.addChild(sunLight, sunCenter);
+    this.app.stage.addChild(this.sun);
+  }
+
+  drawBigPlanet() {
+    const distance = 350;
+    const deg = Math.random() * Math.PI * 2;
+    const coordinates = {
+      x: this.app.screen.width * 0.5 + Math.cos(deg),
+      y: this.app.screen.height * 0.5 + Math.sin(deg)
+    };
+    const bigPlanet = new Planet(coordinates.x, coordinates.y, 20, 0x3e1be4, 1);
+    bigPlanet.name = 'earth';
+    this.app.stage.addChild(bigPlanet);
+    this.bigPlanet = {
+      graphics: bigPlanet,
+      initialAngle: deg,
+      distance: distance
+    };
   }
 
   drawPlanets() {
+    this.starContainer = new PIXI.Container();
+    this.starContainer.name = 'starContainer';
     for (let index = 0; index < this.planetAmount; index++) {
       const deg = Math.random() * Math.PI * 2;
       const distance = Math.floor(Math.random() * this.app.screen.height) + 100;
@@ -60,7 +86,7 @@ export default class Space {
         0xffffff,
         planetLight
       );
-      this.app.stage.addChild(planet);
+      this.starContainer.addChild(planet);
       this.planets.push({
         graphics: planet,
         initialAngle: deg,
@@ -68,6 +94,8 @@ export default class Space {
         speed: Math.floor(Math.random() * 10) + 1
       });
     }
+
+    this.app.stage.addChild(this.starContainer);
   }
 
   drawLine(x, y) {
@@ -83,18 +111,36 @@ export default class Space {
   }
 
   animate() {
-    let count = 0;
+    let starCount = 0;
+    let bigPlanetCount = 0;
+    let earthIndex = 100;
     this.app.ticker.add((delta) => {
-      this.planets.forEach((planet, index) => {
-        if (index === 0) {
-        }
+      /**
+       * Rotate stars around the sun
+       */
+      this.planets.forEach((planet) => {
         const { graphics, initialAngle, distance, speed } = planet;
-        count += speed / (this.planetAmount * 10000);
-        const newPosX = Math.cos(initialAngle + count) * distance;
-        const newPosY = Math.sin(initialAngle + count) * distance;
+        starCount += speed / (this.planetAmount * 10000);
+        const newPosX = Math.cos(initialAngle + starCount) * distance;
+        const newPosY = Math.sin(initialAngle + starCount) * distance;
         graphics.transform.position.x = newPosX;
         graphics.transform.position.y = newPosY;
       });
+
+      /**
+       * Rotate big planet
+       */
+      const { graphics, initialAngle, distance } = this.bigPlanet;
+      bigPlanetCount += 0.01;
+      const newPosX = Math.cos(initialAngle + bigPlanetCount) * distance;
+      const newPosY =
+        Math.sin(initialAngle + bigPlanetCount) * (distance * 0.16);
+
+      graphics.transform.position.x = newPosX;
+      graphics.transform.position.y = newPosY;
+      const isBehind = Math.sin(initialAngle + bigPlanetCount) < 0;
+      earthIndex = isBehind ? 0 : 100;
+      graphics.zIndex = earthIndex;
     });
   }
 }

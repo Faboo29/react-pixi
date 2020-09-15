@@ -28,29 +28,67 @@ export default class Space {
       y: this.app.screen.height * 0.5
     };
     const sunSize = 200;
-    this.sun = new PIXI.Container();
-    this.sun.name = 'sun';
-    this.sun.zIndex = 10;
-    const sunCenter = new Planet(
+
+    /**
+     * Draw two sections of the sun to play
+     * with container's z-indexes
+     */
+    this.sunBack = new PIXI.Container();
+    this.sunFront = new PIXI.Container();
+    this.sunBack.name = 'sun-back';
+    this.sunFront.name = 'sun-front';
+
+    const sunBackGraphics = this.drawHalfSun(
       sunCoordinates.x,
       sunCoordinates.y,
       sunSize,
-      0xf2cc59,
-      0.6
+      0,
+      Math.PI,
+      0xf2cc59
     );
-
-    const sunLight = new Planet(
+    const sunBackLightGraphics = this.drawHalfSun(
       sunCoordinates.x,
       sunCoordinates.y,
       sunSize * 1.04,
-      0xffffff,
-      0.9
+      0,
+      Math.PI,
+      0xffffff
     );
-    this.sun.addChild(sunLight, sunCenter);
-    this.app.stage.addChild(this.sun);
+    const sunFrontGraphics = this.drawHalfSun(
+      sunCoordinates.x,
+      sunCoordinates.y,
+      sunSize,
+      Math.PI,
+      0,
+      0xf2cc59
+    );
+    const sunFrontLightGraphics = this.drawHalfSun(
+      sunCoordinates.x,
+      sunCoordinates.y,
+      sunSize * 1.04,
+      Math.PI,
+      0,
+      0xffffff
+    );
+
+    this.sunBack.addChild(sunBackLightGraphics, sunBackGraphics);
+    this.sunFront.addChild(sunFrontLightGraphics, sunFrontGraphics);
+    this.sunFront.zIndex = 20;
+    this.app.stage.addChild(this.sunFront, this.sunBack);
+  }
+
+  drawHalfSun(x, y, radius, startAngle, endAngle, fill) {
+    let semiArc = new PIXI.Graphics();
+    semiArc = semiArc.beginFill(fill);
+    semiArc.lineStyle(0);
+    semiArc.arc(x, y, radius, startAngle, endAngle);
+    return semiArc;
   }
 
   drawBigPlanet() {
+    this.earthContainer = new PIXI.Container();
+    this.earthContainer.name = 'earth';
+    this.earthContainer.zIndex = 10;
     const distance = 350;
     const deg = Math.random() * Math.PI * 2;
     const coordinates = {
@@ -58,8 +96,18 @@ export default class Space {
       y: this.app.screen.height * 0.5 + Math.sin(deg)
     };
     const bigPlanet = new Planet(coordinates.x, coordinates.y, 20, 0x3e1be4, 1);
-    bigPlanet.name = 'earth';
-    this.app.stage.addChild(bigPlanet);
+    const ellipsePath = new PIXI.Graphics();
+    ellipsePath.lineStyle(4, 0xffffff, 0.4);
+    ellipsePath.drawEllipse(
+      this.app.screen.width * 0.5,
+      this.app.screen.height * 0.5,
+      distance,
+      distance * 0.16
+    );
+    ellipsePath.endFill();
+
+    this.earthContainer.addChild(ellipsePath, bigPlanet);
+    this.app.stage.addChild(this.earthContainer);
     this.bigPlanet = {
       graphics: bigPlanet,
       initialAngle: deg,
@@ -114,6 +162,7 @@ export default class Space {
     let starCount = 0;
     let bigPlanetCount = 0;
     let earthIndex = 100;
+    console.log(this.app.stage.children);
     this.app.ticker.add((delta) => {
       /**
        * Rotate stars around the sun
@@ -139,8 +188,8 @@ export default class Space {
       graphics.transform.position.x = newPosX;
       graphics.transform.position.y = newPosY;
       const isBehind = Math.sin(initialAngle + bigPlanetCount) < 0;
-      earthIndex = isBehind ? 0 : 100;
-      graphics.zIndex = earthIndex;
+      // earthIndex = isBehind ? 0 : 100;
+      // this.earthContainer.zIndex = earthIndex;
     });
   }
 }

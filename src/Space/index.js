@@ -109,17 +109,15 @@ export default class Space {
 
     // ELLIPSE
     const ellipsePath = new PIXI.Graphics();
-    ellipsePath.lineStyle(
-      1000 / planet.distance,
-      PIXI.utils.string2hex(planet.color),
-      0.3
-    );
+    ellipsePath.lineStyle(1000 / planet.distance, 0xffffff, 0.4);
     ellipsePath.drawEllipse(
       this.app.screen.width * 0.5,
       this.app.screen.height * 0.5,
       planet.distance,
       planet.distance * this.getEllipseYRatio(planet.distance)
     );
+
+    console.log(this.getEllipseYRatio(planet.distance));
     ellipsePath.endFill();
     const planetContainer = new PIXI.Container();
     planetContainer.addChild(ellipsePath, bigPlanet);
@@ -139,7 +137,7 @@ export default class Space {
   }
 
   getEllipseYRatio(distance) {
-    return 100 / distance;
+    return 52 / distance + distance * 0.0001;
   }
 
   drawPlanets() {

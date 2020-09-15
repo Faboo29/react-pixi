@@ -29,7 +29,7 @@
     "zIndex": 12,
     "ellipseColor": "0xffffff",
     "color": "0x8A2ED1",
-    "size": 70
+    "size": 40
   },
   {
     "name": "jupiter",
@@ -37,6 +37,6 @@
     "zIndex": 13,
     "ellipseColor": "0xffffff",
     "color": "0x55F10E",
-    "size": 50
+    "size": 35
   }
 ]

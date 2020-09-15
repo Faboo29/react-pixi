@@ -1,0 +1,42 @@
+[
+  {
+    "name": "mercury",
+    "distance": 270,
+    "zIndex": 9,
+    "ellipseColor": "0xffffff",
+    "color": "0x25C6DA",
+    "size": 10
+  },
+  {
+    "name": "earth",
+    "distance": 350,
+    "zIndex": 10,
+    "ellipseColor": "0xffffff",
+    "color": "0x3e1be4",
+    "size": 20
+  },
+  {
+    "name": "mars",
+    "distance": 500,
+    "zIndex": 11,
+    "ellipseColor": "0xffffff",
+    "color": "0xE4311B",
+    "size": 30
+  },
+  {
+    "name": "uranus",
+    "distance": 700,
+    "zIndex": 12,
+    "ellipseColor": "0xffffff",
+    "color": "0x8A2ED1",
+    "size": 70
+  },
+  {
+    "name": "jupiter",
+    "distance": 900,
+    "zIndex": 13,
+    "ellipseColor": "0xffffff",
+    "color": "0x55F10E",
+    "size": 50
+  }
+]

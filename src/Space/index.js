@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js';
 import Planet from './Planet/Planet';
+import planets from './Planet/planets.json';
 
 export default class Space {
   constructor() {
@@ -12,12 +13,19 @@ export default class Space {
     this.planets = [];
     this.planetAmount = 2000;
     this.app.stage.sortableChildren = true;
+    this.bigPlanets = [];
   }
 
   init() {
     document.getElementById('canvas').appendChild(this.app.view);
     this.drawPlanets();
-    this.drawBigPlanet();
+    // this.drawBigPlanet();
+    this.bigPlanetContainer = new PIXI.Container();
+    this.bigPlanetContainer.name = 'bigPlanets';
+    this.bigPlanetContainer.zIndex = 10;
+    planets.forEach((planet) => {
+      this.drawBigPlanet(planet);
+    });
     this.drawSun();
     this.animate();
   }
@@ -85,34 +93,53 @@ export default class Space {
     return semiArc;
   }
 
-  drawBigPlanet() {
-    this.earthContainer = new PIXI.Container();
-    this.earthContainer.name = 'earth';
-    this.earthContainer.zIndex = 10;
-    const distance = 350;
+  drawBigPlanet(planet) {
     const deg = Math.random() * Math.PI * 2;
     const coordinates = {
       x: this.app.screen.width * 0.5 + Math.cos(deg),
       y: this.app.screen.height * 0.5 + Math.sin(deg)
     };
-    const bigPlanet = new Planet(coordinates.x, coordinates.y, 20, 0x3e1be4, 1);
+    const bigPlanet = new Planet(
+      coordinates.x,
+      coordinates.y,
+      planet.size,
+      PIXI.utils.string2hex(planet.color),
+      1
+    );
+
+    // ELLIPSE
     const ellipsePath = new PIXI.Graphics();
-    ellipsePath.lineStyle(4, 0xffffff, 0.4);
+    ellipsePath.lineStyle(
+      1000 / planet.distance,
+      PIXI.utils.string2hex(planet.color),
+      0.3
+    );
     ellipsePath.drawEllipse(
       this.app.screen.width * 0.5,
       this.app.screen.height * 0.5,
-      distance,
-      distance * 0.16
+      planet.distance,
+      planet.distance * this.getEllipseYRatio(planet.distance)
     );
     ellipsePath.endFill();
-
-    this.earthContainer.addChild(ellipsePath, bigPlanet);
-    this.app.stage.addChild(this.earthContainer);
-    this.bigPlanet = {
+    const planetContainer = new PIXI.Container();
+    planetContainer.addChild(ellipsePath, bigPlanet);
+    this.bigPlanetContainer.addChild(planetContainer);
+    this.app.stage.addChild(this.bigPlanetContainer);
+    this.bigPlanets.push({
       graphics: bigPlanet,
       initialAngle: deg,
-      distance: distance
-    };
+      distance: planet.distance,
+      yPerspective: this.getEllipseYRatio(planet.distance),
+      speed: planet.speed
+    });
+  }
+
+  getColor(color) {
+    return parseInt(color.substring(1), 16);
+  }
+
+  getEllipseYRatio(distance) {
+    return 100 / distance;
   }
 
   drawPlanets() {
@@ -139,7 +166,7 @@ export default class Space {
         graphics: planet,
         initialAngle: deg,
         distance: distance,
-        speed: Math.floor(Math.random() * 10) + 1
+        speed: Math.floor(Math.random() * 3) + 1
       });
     }
 
@@ -160,9 +187,7 @@ export default class Space {
 
   animate() {
     let starCount = 0;
-    let bigPlanetCount = 0;
-    let earthIndex = 100;
-    console.log(this.app.stage.children);
+    let bigPlanetPosition = 0;
     this.app.ticker.add((delta) => {
       /**
        * Rotate stars around the sun
@@ -179,17 +204,17 @@ export default class Space {
       /**
        * Rotate big planet
        */
-      const { graphics, initialAngle, distance } = this.bigPlanet;
-      bigPlanetCount += 0.01;
-      const newPosX = Math.cos(initialAngle + bigPlanetCount) * distance;
-      const newPosY =
-        Math.sin(initialAngle + bigPlanetCount) * (distance * 0.16);
+      this.bigPlanets.forEach((planet) => {
+        const { graphics, initialAngle, distance, yPerspective } = planet;
+        bigPlanetPosition += 0.28 / distance;
+        const newPosX = Math.cos(initialAngle + bigPlanetPosition) * distance;
+        const newPosY =
+          Math.sin(initialAngle + bigPlanetPosition) *
+          (distance * yPerspective);
 
-      graphics.transform.position.x = newPosX;
-      graphics.transform.position.y = newPosY;
-      const isBehind = Math.sin(initialAngle + bigPlanetCount) < 0;
-      // earthIndex = isBehind ? 0 : 100;
-      // this.earthContainer.zIndex = earthIndex;
+        graphics.transform.position.x = newPosX;
+        graphics.transform.position.y = newPosY;
+      });
     });
   }
 }
